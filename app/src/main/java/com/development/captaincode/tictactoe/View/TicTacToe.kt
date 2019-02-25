@@ -4,9 +4,11 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PointF
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import kotlinx.android.synthetic.main.activity_main.view.*
 
 class TicTacToeView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
@@ -15,6 +17,10 @@ class TicTacToeView(context: Context?, attrs: AttributeSet?) : View(context, att
 
     private var xCoord: Float = -1f
     private var yCoord: Float = -1f
+
+    private var circleList = mutableListOf<PointF>()
+
+
     private var radius = 80f
 
 
@@ -49,12 +55,12 @@ class TicTacToeView(context: Context?, attrs: AttributeSet?) : View(context, att
     override fun onDraw(canvas: Canvas?) {
 
         // vertical lines
-        val line1_vert_origin = width.toFloat()/3
-        val line2_vert_origin = line1_vert_origin * 2
+        val line1VertOrigin = (width / 3).toFloat()
+        val line2VertOrigin = line1VertOrigin * 2
 
         //horizontal lines
-        val line1_horiz_origin = height.toFloat()/3
-        val line2_horiz_origin = line1_horiz_origin *2
+        val line1_horiz_origin = (height/ 3).toFloat()
+        val line2_horiz_origin = line1_horiz_origin * 2
 
 
         val height = height.toFloat()
@@ -62,71 +68,70 @@ class TicTacToeView(context: Context?, attrs: AttributeSet?) : View(context, att
 
         canvas?.drawRect(0f, 0f, width, height, paintBackground)
 
-        //vertical l    ines
-        canvas?.drawLine(line1_vert_origin, 0f   , line1_vert_origin, height, paintLine)
-        canvas?.drawLine(line2_vert_origin, 0f  , line2_vert_origin, height, paintLine)
+        //vertical lines
+        canvas?.drawLine(line1VertOrigin, 0f, line1VertOrigin, height, paintLine)
+        canvas?.drawLine(line2VertOrigin, 0f, line2VertOrigin, height, paintLine)
 
         //horizontal lines
         canvas?.drawLine(0f, line1_horiz_origin, width, line1_horiz_origin, paintLine)
         canvas?.drawLine(0f, line2_horiz_origin, width, line2_horiz_origin, paintLine)
 
 
-        topRow = ((height/3)/2)
-        leftCol = ((width/3)/2)
+        topRow = ((height / 3) / 2)
+        leftCol = ((width / 3) / 2)
 
-        midRow = height/2
+        midRow = height / 2
 
-        midCol = (width/2).toFloat()
+        midCol = (width / 2)
 
         //right side
         rightCol = width - leftCol
         bottomRow = height - topRow
 
 
-        topRowThreshold = height/3
-        bottomRowThreshold = 2 * (height/3)
+        topRowThreshold = height / 3
+        bottomRowThreshold = 2 * (height / 3)
 
-        leftColThreshold = width/3
-        rightColThreshold = (2* leftColThreshold)
+        leftColThreshold = width / 3
+        rightColThreshold = (2 * leftColThreshold)
 
 
-        if (xCoord != -1f && yCoord != -1f) {
-            canvas?.drawCircle(xCoord, yCoord, radius, paintLine)
+        for (circle in circleList) {
+            canvas?.drawCircle(circle.x, circle.y, radius, paintLine)
         }
     }
 
 
+    public fun resetGame(){
+        circleList.clear()
+        invalidate()
+    }
     override fun onTouchEvent(event: MotionEvent?): Boolean {
 
         if (event?.action == MotionEvent.ACTION_DOWN) {
             findCenter(event.x, event.y)
+            circleList.add(PointF(xCoord, yCoord)) // adding a point object to our list of circles
+
             invalidate()
         }
         return true
     }
-    fun findCenter(xVal:Float, yVal: Float){
 
+    fun findCenter(xVal: Float, yVal: Float) {
         //Vertical for upper third
-
         if (xVal < leftColThreshold) {
             xCoord = leftCol
-            findYCoordinate(yVal)
-        }else if ((xVal> leftColThreshold) and (xVal < rightColThreshold)){
+        } else if ((xVal > leftColThreshold) and (xVal < rightColThreshold)) {
             xCoord = midCol
-            findYCoordinate(yVal)
-        }else if (xVal > rightColThreshold){
+        } else if (xVal > rightColThreshold) {
             xCoord = rightCol
-            findYCoordinate(yVal)
         }
-
+        findYCoordinate(yVal)
     }
-    fun findYCoordinate(yVal:Float){
-        if (yVal <topRowThreshold   ) {
-            yCoord = topRow
-        } else if ((yVal > topRowThreshold) and (yVal < bottomRowThreshold)) {
-            yCoord = midRow
-        } else if (yVal > bottomRowThreshold) {
-            yCoord = bottomRow
-        }
+
+    fun findYCoordinate(yVal: Float) {
+        if (yVal < topRowThreshold) yCoord = topRow
+        else if ((yVal > topRowThreshold) and (yVal < bottomRowThreshold)) yCoord = midRow
+        else if (yVal > bottomRowThreshold) yCoord = bottomRow
     }
 }
